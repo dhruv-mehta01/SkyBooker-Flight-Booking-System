@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>My Bookings</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <h2>Thank You for Booking with SkyBooker ✈</h2>
+    <p>Your booking is confirmed.</p>
+
+<div class="container">
+
+<h2>My Bookings</h2>
+
+<div id="bookingsList"></div>
+
+</div>
+
+<script>
+
+const API = "http://localhost:3000";
+
+const user = JSON.parse(localStorage.getItem("user"));
+
+fetch(API + "/bookings")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+const myBookings = data.filter(
+b=>b.userEmail === user.email
+);
+
+const div = document.getElementById("bookingsList");
+
+myBookings.forEach(b=>{
+
+div.innerHTML += `
+<div class="flight-card">
+<h3>${b.flight.from} → ${b.flight.to}</h3>
+<p>Passenger: ${b.name}</p>
+<p>Price: ₹${b.flight.price}</p>
+</div>
+`;
+
+});
+
+});
+
+</script>
+
+</body>
+</html>

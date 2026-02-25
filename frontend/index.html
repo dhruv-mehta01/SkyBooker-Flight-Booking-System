@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SkyBooker - Flight Booking System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="nav-links">
+
+    <a href="index.html">Home</a>
+
+    <a href="bookings.html">My Bookings</a>
+
+    <span id="userDisplay"></span>
+
+    <a href="#" onclick="logout()" id="logoutBtn" style="display:none;">
+        Logout
+    </a>
+
+    <a href="login.html" id="loginBtn">
+        Login
+    </a>
+
+</div>
+<!-- Hero Section -->
+<div class="hero">
+    <div class="search-box">
+        <h2>Search Flights</h2>
+
+        <input type="text" id="from" placeholder="From">
+        <input type="text" id="to" placeholder="To">
+        <input type="date" id="date">
+
+        <button id="searchBtn">Search Flights</button>
+    </div>
+</div>
+
+<!-- Flight Results Section -->
+<section class="results-section">
+
+    <div class="container">
+
+        <div id="flights"></div>
+
+    </div>
+
+</section>
+
+<script src="js/main.js"></script>
+
+</body>
+</html>

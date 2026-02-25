@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Payment</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="payment-container">
+
+<h2>Complete Payment</h2>
+
+<p id="flightInfo"></p>
+
+<button onclick="payNow()">Pay Now</button>
+
+</div>
+
+<script>
+
+const flight = JSON.parse(localStorage.getItem("selectedFlight"));
+
+document.getElementById("flightInfo").innerHTML =
+`
+${flight.from} → ${flight.to}<br>
+Price: ₹${flight.price}
+`;
+
+function payNow(){
+
+alert("Payment Successful ✅");
+
+localStorage.setItem("paymentDone", true);
+
+window.location.href="ticket.html";
+
+}
+
+</script>
+
+</body>
+</html>

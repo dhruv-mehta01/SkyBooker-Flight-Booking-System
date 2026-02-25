@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Ticket</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        .ticket {
+            background: white;
+            padding: 20px;
+            margin: 50px auto;
+            width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Flight Ticket</h1>
+
+<div class="ticket" id="ticket"></div>
+
+<script>
+    const booking = JSON.parse(localStorage.getItem("booking"));
+
+    document.getElementById("ticket").innerHTML = `
+        <h3>Booking ID: ${booking.bookingId}</h3>
+        <p>Name: ${booking.name}</p>
+        <p>From: ${booking.flight.from}</p>
+        <p>To: ${booking.flight.to}</p>
+        <p>Price: ₹${booking.flight.price}</p>
+    `;
+</script>
+
+</body>
+</html>
