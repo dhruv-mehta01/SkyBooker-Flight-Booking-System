@@ -71,7 +71,7 @@ Communication:
 Frontend ⇄ REST API ⇄ Backend Server
 
 ## Project Structure
-
+```
 SkyBooker-Flight-Booking-System/
 │
 ├── frontend/
@@ -92,7 +92,7 @@ SkyBooker-Flight-Booking-System/
 │   ├── package.json
 │
 └── README.md
-
+```
 ## API Endpoints
 
 GET /flights  
