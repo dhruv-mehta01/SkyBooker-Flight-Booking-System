@@ -1,28 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<title>Login - SkyBooker</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBooker | Sign In</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .auth-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .auth-image {
+            flex: 1;
+            background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=1200&q=80') center/cover;
+            display: none;
+        }
+
+        .auth-form-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: var(--bg-dark);
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-footer {
+            margin-top: 30px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .auth-footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @media (min-width: 900px) {
+            .auth-image {
+                display: block;
+            }
+
+            .auth-form-container {
+                flex: 0 0 500px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="search-box">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
-<h2>Login</h2>
+    <div class="auth-layout fade-in-up">
+        <div class="auth-form-container">
+            <div class="auth-box glass" style="padding: 40px; border-radius: var(--radius-lg);">
+                <a href="index.html" class="logo" style="justify-content: center; margin-bottom: 30px;">
+                    <i class='bx bxs-plane-alt text-gradient'></i>
+                    <span>Sky</span>Booker
+                </a>
 
-<input type="email" id="email" placeholder="Email">
-<input type="password" id="password" placeholder="Password">
+                <div class="auth-header">
+                    <h1>Welcome Back</h1>
+                    <p class="text-muted">Sign in to manage your flights and bookings.</p>
+                </div>
 
-<button onclick="login()">Login</button>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" class="input-field" placeholder="you@example.com" required>
+                    </div>
 
-<p>
-Don't have account?
-<a href="signup.html">Signup</a>
-</p>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                    </div>
 
-</div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
+                        Sign In <i class='bx bx-log-in-circle'></i>
+                    </button>
+                </form>
 
-<script src="js/auth.js"></script>
+                <div class="auth-footer">
+                    Don't have an account? <a href="signup.html">Create an account</a>
+                </div>
+            </div>
+        </div>
+        <div class="auth-image"></div>
+    </div>
 
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
 </body>
+
 </html>

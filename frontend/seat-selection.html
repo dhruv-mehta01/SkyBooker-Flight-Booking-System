@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBooker | Seat Selection</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .flow-container {
+            display: flex;
+            gap: 40px;
+            padding: 40px 0;
+            align-items: flex-start;
+        }
+
+        .seat-map-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .summary-section {
+            flex: 1;
+            position: sticky;
+            top: 100px;
+        }
+
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--border-glass);
+            z-index: 1;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border-glass);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            z-index: 2;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .step.active {
+            background: var(--accent-gradient);
+            border: none;
+            color: #fff;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .step.completed {
+            background: var(--accent-primary);
+            color: #000;
+            border: none;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 50px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .flight-summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+        }
+
+        /* Plane Body */
+        .plane {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border-glass);
+            border-radius: 100px 100px 40px 40px;
+            padding: 60px 40px;
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .plane::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 40px;
+            background: var(--border-glass);
+            border-radius: 50px 50px 0 0;
+            opacity: 0.5;
+        }
+
+        .seat-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .aisle {
+            width: 30px;
+        }
+
+        .seat {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px 8px 4px 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            position: relative;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .seat::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 5px;
+            right: 5px;
+            height: 5px;
+            background: inherit;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        .seat:hover {
+            transform: scale(1.1);
+            background: rgba(0, 240, 255, 0.2);
+            color: #fff;
+        }
+
+        .seat.selected {
+            background: var(--accent-gradient);
+            border: none;
+            color: #fff;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .seat.occupied {
+            background: rgba(255, 255, 255, 0.02);
+            color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.05);
+            cursor: not-allowed;
+        }
+
+        .seat.occupied:hover {
+            transform: none;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 900px) {
+            .flow-container {
+                flex-direction: column-reverse;
+            }
+
+            .summary-section {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <i class='bx bxs-plane-alt text-gradient'></i>
+            <span>Sky</span>Booker
+        </a>
+        <div class="nav-links">
+            <span id="userDisplay" class="text-gradient font-bold"></span>
+            <button onclick="logout()" id="logoutBtn" class="btn btn-outline" style="display:none;">
+                <i class='bx bx-log-out'></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <main class="container fade-in-up">
+
+        <div class="stepper">
+            <div class="step completed"><i class='bx bx-check'></i><span class="step-label">Select Flight</span></div>
+            <div class="step completed"><i class='bx bx-check'></i><span class="step-label">Passengers</span></div>
+            <div class="step active">3<span class="step-label">Seats</span></div>
+            <div class="step">4<span class="step-label">Payment</span></div>
+        </div>
+
+        <div class="flow-container">
+            <!-- Main Seat Map -->
+            <div class="seat-map-section">
+
+                <h2 class="text-gradient" style="margin-bottom: 10px; font-size: 2rem;">Choose your seat</h2>
+                <p class="text-muted" style="margin-bottom: 30px;">Click on a seat to select it. Only 1 seat per
+                    passenger.</p>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box"
+                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);"></div>
+                        Available
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: var(--accent-primary);"></div> Selected
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: rgba(255,255,255,0.02);"></div> Occupied
+                    </div>
+                </div>
+
+                <div class="plane" id="planeLayout">
+                    <!-- JS Injected Seats -->
+                </div>
+            </div>
+
+            <!-- Sidebar Summary -->
+            <div class="summary-section">
+                <div class="flight-summary-card">
+                    <h4
+                        style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 10px;">
+                        Your Selection</h4>
+
+                    <div id="summaryRoute" style="margin-bottom: 15px;"></div>
+
+                    <div id="passengerSummary"
+                        style="border-top: 1px solid var(--border-glass); padding-top: 15px; margin-bottom: 15px;">
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Seat Selected</span>
+                        <strong id="selectedSeatLabel" class="text-gradient">None</strong>
+                    </div>
+
+                    <div
+                        style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 20px;">
+                        <span class="text-muted">Total Required</span>
+                        <span class="text-gradient" style="font-size: 1.8rem; font-weight: bold;"
+                            id="summaryTotal">₹0</span>
+                    </div>
+
+                    <button id="continueBtn" class="btn btn-primary" style="width: 100%; margin-top: 20px;" disabled>
+                        Proceed to Payment <i class='bx bx-right-arrow-alt'></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="js/ui.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const flightStr = localStorage.getItem("selectedFlight");
+            const passStr = localStorage.getItem("passengerDetails");
+
+            if (!flightStr || !passStr) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const flight = JSON.parse(flightStr);
+            const passenger = JSON.parse(passStr);
+
+            // Populate Summary
+            document.getElementById("summaryRoute").innerHTML = `
+                <h3 style="font-size: 1.2rem;">${flight.from} <i class='bx bx-right-arrow-alt text-gradient'></i> ${flight.to}</h3>
+                <p class="text-muted" style="font-size: 0.9rem;">${flight.date} • ${flight.departure}</p>
+            `;
+
+            document.getElementById("passengerSummary").innerHTML = `
+                <p class="text-muted" style="margin-bottom:5px; font-size:0.85rem;">Passenger 1</p>
+                <strong>${passenger.firstName} ${passenger.lastName}</strong>
+            `;
+
+            document.getElementById("summaryTotal").innerText = `₹${flight.price}`;
+
+            // Generate Plane Seats
+            const planeLayout = document.getElementById("planeLayout");
+            const rows = 12;
+            const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+            let html = "";
+            for (let i = 1; i <= rows; i++) {
+                html += `<div class="seat-row">`;
+                for (let j = 0; j < 6; j++) {
+                    const seatId = `${i}${cols[j]}`;
+
+                    // Random occupied seats
+                    let classes = "seat";
+                    if (Math.random() < 0.25) classes += " occupied";
+
+                    html += `<div class="${classes}" data-seat="${seatId}">${seatId}</div>`;
+
+                    // Add aisle
+                    if (j === 2) html += `<div class="aisle"></div>`;
+                }
+                html += `</div>`;
+            }
+            planeLayout.innerHTML = html;
+
+            // Handle Seat Selection
+            let selectedSeat = null;
+            const continueBtn = document.getElementById("continueBtn");
+            const seatLabel = document.getElementById("selectedSeatLabel");
+
+            document.querySelectorAll(".seat:not(.occupied)").forEach(seat => {
+                seat.addEventListener("click", () => {
+                    // Deselect previous
+                    const prev = document.querySelector(".seat.selected");
+                    if (prev) prev.classList.remove("selected");
+
+                    // Select new
+                    seat.classList.add("selected");
+                    selectedSeat = seat.getAttribute("data-seat");
+
+                    // Update UI
+                    seatLabel.innerText = selectedSeat;
+                    continueBtn.disabled = false;
+                });
+            });
+
+            // On Continue
+            continueBtn.addEventListener("click", () => {
+                localStorage.setItem("selectedSeat", selectedSeat);
+                showToast(`Seat ${selectedSeat} reserved!`, "success");
+                setTimeout(() => window.location.href = "payment.html", 1000);
+            });
+        });
+    </script>
+</body>
+
+</html>

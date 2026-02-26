@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBooker | Passenger Details</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .flow-container {
+            display: flex;
+            gap: 40px;
+            padding: 40px 0;
+            align-items: flex-start;
+        }
+
+        .form-section {
+            flex: 2;
+        }
+
+        .summary-section {
+            flex: 1;
+            position: sticky;
+            top: 100px;
+        }
+
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--border-glass);
+            z-index: 1;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border-glass);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            z-index: 2;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .step.active {
+            background: var(--accent-gradient);
+            border: none;
+            color: #fff;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .step.completed {
+            background: var(--accent-primary);
+            color: #000;
+            border: none;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 50px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .flight-summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+        }
+
+        .summary-route h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .summary-details {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-glass);
+            padding-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .flow-container {
+                flex-direction: column-reverse;
+            }
+
+            .summary-section {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <i class='bx bxs-plane-alt text-gradient'></i>
+            <span>Sky</span>Booker
+        </a>
+        <div class="nav-links">
+            <span id="userDisplay" class="text-gradient font-bold"></span>
+            <button onclick="logout()" id="logoutBtn" class="btn btn-outline" style="display:none;">
+                <i class='bx bx-log-out'></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <main class="container fade-in-up">
+
+        <div class="stepper">
+            <div class="step completed"><i class='bx bx-check'></i><span class="step-label">Select Flight</span></div>
+            <div class="step active">2<span class="step-label">Passengers</span></div>
+            <div class="step">3<span class="step-label">Seats</span></div>
+            <div class="step">4<span class="step-label">Payment</span></div>
+        </div>
+
+        <div class="flow-container">
+            <!-- Main Form -->
+            <div class="form-section">
+                <div class="glass" style="padding: 40px; border-radius: var(--radius-lg);">
+                    <h2 class="text-gradient" style="margin-bottom: 30px; font-size: 2rem;">Passenger Information</h2>
+
+                    <form id="passengerForm">
+                        <h4 style="margin-bottom: 15px; color: var(--text-muted);">Adult 1 (Primary Contact)</h4>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="input-group">
+                                <label>First Name</label>
+                                <input type="text" id="fname" class="input-field" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Last Name</label>
+                                <input type="text" id="lname" class="input-field" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="input-group">
+                                <label>Passport / ID Number</label>
+                                <input type="text" id="passport" class="input-field" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Date of Birth</label>
+                                <input type="date" id="dob" class="input-field" required>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="margin-top: 20px;">
+                            <label>Contact Phone</label>
+                            <input type="tel" id="phone" class="input-field" placeholder="+1 (555) 000-0000" required>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; margin-top: 40px;">
+                            <button type="submit" class="btn btn-primary" style="padding: 15px 40px;">
+                                Continue to Seats <i class='bx bx-right-arrow-alt'></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar Summary -->
+            <div class="summary-section">
+                <div class="flight-summary-card">
+                    <h4
+                        style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 10px;">
+                        Your Selection</h4>
+
+                    <div class="summary-route" id="summaryRoute">
+                        <!-- Injected by JS -->
+                    </div>
+
+                    <div class="summary-details" id="summaryDetails">
+                        <!-- Injected by JS -->
+                    </div>
+
+                    <div
+                        style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 20px;">
+                        <span class="text-muted">Total Required</span>
+                        <span class="text-gradient" style="font-size: 1.8rem; font-weight: bold;"
+                            id="summaryTotal">₹0</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="js/ui.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const flightStr = localStorage.getItem("selectedFlight");
+            if (!flightStr) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const flight = JSON.parse(flightStr);
+
+            // Populate Summary
+            document.getElementById("summaryRoute").innerHTML = `
+                <h3>${flight.from} <i class='bx bx-right-arrow-alt text-gradient'></i> ${flight.to}</h3>
+                <p class="text-muted"><i class='bx bx-calendar'></i> ${flight.date}</p>
+            `;
+
+            document.getElementById("summaryDetails").innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Airline</span>
+                    <strong>${flight.airline}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Departure</span>
+                    <strong>${flight.departure}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Duration</span>
+                    <strong>${flight.duration}</strong>
+                </div>
+            `;
+
+            document.getElementById("summaryTotal").innerText = `₹${flight.price}`;
+
+            // Handle Form Submission
+            document.getElementById("passengerForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const passenger = {
+                    firstName: document.getElementById("fname").value,
+                    lastName: document.getElementById("lname").value,
+                    passport: document.getElementById("passport").value,
+                    dob: document.getElementById("dob").value,
+                    phone: document.getElementById("phone").value
+                };
+
+                localStorage.setItem("passengerDetails", JSON.stringify(passenger));
+
+                showToast("Passenger details saved", "success");
+                setTimeout(() => window.location.href = "seat-selection.html", 1000);
+            });
+        });
+    </script>
+</body>
+
+</html>

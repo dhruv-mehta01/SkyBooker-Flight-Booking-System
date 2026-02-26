@@ -1,42 +1,374 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<title>Payment</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBooker | Payment Checkout</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .flow-container {
+            display: flex;
+            gap: 40px;
+            padding: 40px 0;
+            align-items: flex-start;
+        }
+
+        .payment-section {
+            flex: 2;
+        }
+
+        .summary-section {
+            flex: 1;
+            position: sticky;
+            top: 100px;
+        }
+
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--border-glass);
+            z-index: 1;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border-glass);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            z-index: 2;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .step.active {
+            background: var(--accent-gradient);
+            border: none;
+            color: #fff;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .step.completed {
+            background: var(--accent-primary);
+            color: #000;
+            border: none;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 50px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .flight-summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+        }
+
+        /* Credit Card Mock */
+        .credit-card {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .credit-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+
+        .cc-chip {
+            width: 50px;
+            height: 35px;
+            background: linear-gradient(135deg, #d4af37, #f3e5ab);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .cc-number {
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+
+        .cc-info {
+            display: flex;
+            justify-content: space-between;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .cc-info strong {
+            display: block;
+            color: #fff;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 900px) {
+            .flow-container {
+                flex-direction: column-reverse;
+            }
+
+            .summary-section {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="payment-container">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
-<h2>Complete Payment</h2>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <i class='bx bxs-plane-alt text-gradient'></i>
+            <span>Sky</span>Booker
+        </a>
+        <div class="nav-links">
+            <span id="userDisplay" class="text-gradient font-bold"></span>
+            <button onclick="logout()" id="logoutBtn" class="btn btn-outline" style="display:none;">
+                <i class='bx bx-log-out'></i> Logout
+            </button>
+        </div>
+    </nav>
 
-<p id="flightInfo"></p>
+    <main class="container fade-in-up">
 
-<button onclick="payNow()">Pay Now</button>
+        <div class="stepper">
+            <div class="step completed"><i class='bx bx-check'></i><span class="step-label">Select Flight</span></div>
+            <div class="step completed"><i class='bx bx-check'></i><span class="step-label">Passengers</span></div>
+            <div class="step completed"><i class='bx bx-check'></i><span class="step-label">Seats</span></div>
+            <div class="step active">4<span class="step-label">Payment</span></div>
+        </div>
 
-</div>
+        <div class="flow-container">
+            <!-- Payment Form -->
+            <div class="payment-section">
+                <div class="glass" style="padding: 40px; border-radius: var(--radius-lg);">
+                    <h2 class="text-gradient" style="margin-bottom: 30px; font-size: 2rem;">Payment Details</h2>
 
-<script>
+                    <div class="credit-card">
+                        <div class="cc-chip"></div>
+                        <div class="cc-number" id="ccDisplay">•••• •••• •••• ••••</div>
+                        <div class="cc-info">
+                            <div>Cardholder<strong id="ccNameDisplay">Jane Doe</strong></div>
+                            <div>Valid Thru<strong id="ccExpiryDisplay">MM/YY</strong></div>
+                        </div>
+                    </div>
 
-const flight = JSON.parse(localStorage.getItem("selectedFlight"));
+                    <form id="paymentForm">
+                        <div class="input-group">
+                            <label>Name on Card</label>
+                            <input type="text" id="ccName" class="input-field" placeholder="Jane Doe" required>
+                        </div>
 
-document.getElementById("flightInfo").innerHTML =
-`
-${flight.from} → ${flight.to}<br>
-Price: ₹${flight.price}
-`;
+                        <div class="input-group">
+                            <label>Card Number</label>
+                            <input type="text" id="ccNum" class="input-field" placeholder="0000 0000 0000 0000"
+                                maxlength="19" required>
+                        </div>
 
-function payNow(){
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="input-group">
+                                <label>Expiry Date (MM/YY)</label>
+                                <input type="text" id="ccExpiry" class="input-field" placeholder="MM/YY" maxlength="5"
+                                    required>
+                            </div>
+                            <div class="input-group">
+                                <label>CVV</label>
+                                <input type="password" id="ccCvv" class="input-field" placeholder="123" maxlength="4"
+                                    required>
+                            </div>
+                        </div>
 
-alert("Payment Successful ✅");
+                        <div style="display: flex; justify-content: flex-end; margin-top: 40px;">
+                            <button type="submit" class="btn btn-primary" style="padding: 15px 40px; width: 100%;">
+                                <i class='bx bx-lock-alt'></i> Pay Securely
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-localStorage.setItem("paymentDone", true);
+            <!-- Sidebar Summary -->
+            <div class="summary-section">
+                <div class="flight-summary-card">
+                    <h4
+                        style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 10px;">
+                        Order Summary</h4>
 
-window.location.href="ticket.html";
+                    <div id="summaryRoute" style="margin-bottom: 15px;"></div>
 
-}
+                    <div id="passengerSummary"
+                        style="border-top: 1px solid var(--border-glass); padding-top: 15px; margin-bottom: 15px;">
+                    </div>
 
-</script>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Seat</span>
+                        <strong id="seatSummary" class="text-gradient">Unknown</strong>
+                    </div>
 
+                    <div
+                        style="display: flex; justify-content: space-between; margin-bottom: 10px; border-top: 1px solid var(--border-glass); padding-top: 15px;">
+                        <span>Base Fare</span>
+                        <strong id="baseFare">₹0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span class="text-muted">Taxes & Fees</span>
+                        <strong id="taxesFare">₹850</strong>
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-glass); padding-top: 20px;">
+                        <span class="text-muted">Total Amount</span>
+                        <span class="text-gradient" style="font-size: 1.8rem; font-weight: bold;"
+                            id="summaryTotal">₹0</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="js/ui.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const flightStr = localStorage.getItem("selectedFlight");
+            const passStr = localStorage.getItem("passengerDetails");
+            const seatStr = localStorage.getItem("selectedSeat");
+            const userStr = localStorage.getItem("user");
+
+            if (!flightStr || !passStr || !userStr) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const flight = JSON.parse(flightStr);
+            const passenger = JSON.parse(passStr);
+            const user = JSON.parse(userStr);
+
+            // Populate Summary
+            document.getElementById("summaryRoute").innerHTML = `
+                <h3 style="font-size: 1.2rem;">${flight.from} <i class='bx bx-right-arrow-alt text-gradient'></i> ${flight.to}</h3>
+                <p class="text-muted" style="font-size: 0.9rem;">${flight.date} • ${flight.departure}</p>
+            `;
+
+            document.getElementById("passengerSummary").innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="text-muted">Primary Passenger</span>
+                    <strong>${passenger.firstName} ${passenger.lastName}</strong>
+                </div>
+            `;
+
+            document.getElementById("seatSummary").innerText = seatStr || "Not selected";
+
+            const basePrice = parseInt(flight.price);
+            const taxes = 850;
+            const total = basePrice + taxes;
+
+            document.getElementById("baseFare").innerText = `₹${basePrice}`;
+            document.getElementById("summaryTotal").innerText = `₹${total}`;
+
+            // Live Card Updates
+            document.getElementById("ccNum").addEventListener("input", (e) => {
+                let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+                val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+                e.target.value = val;
+                document.getElementById("ccDisplay").innerText = val || "•••• •••• •••• ••••";
+            });
+            document.getElementById("ccName").addEventListener("input", (e) => {
+                document.getElementById("ccNameDisplay").innerText = e.target.value || "Jane Doe";
+            });
+            document.getElementById("ccExpiry").addEventListener("input", (e) => {
+                let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+                if (val.length >= 3) {
+                    val = val.substring(0, 2) + '/' + val.substring(2, 4);
+                }
+                e.target.value = val;
+                document.getElementById("ccExpiryDisplay").innerText = val || "MM/YY";
+            });
+
+            // Handle Payment
+            const btn = document.querySelector("#paymentForm button");
+            document.getElementById("paymentForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Processing...`;
+                btn.disabled = true;
+
+                // Call backend API /book
+                fetch("http://localhost:3000/book", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: `${passenger.firstName} ${passenger.lastName}`,
+                        email: user.email,
+                        flightId: flight.id,
+                        seat: seatStr,
+                        totalPrice: total
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.booking) {
+                            localStorage.setItem("finalBooking", JSON.stringify(data.booking));
+                            showToast("Payment Successful!", "success");
+                            setTimeout(() => window.location.href = "ticket.html", 1500);
+                        } else {
+                            showToast(data.message || "Booking failed", "error");
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(err => {
+                        showToast("Transaction error", "error");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+            });
+        });
+    </script>
 </body>
+
 </html>

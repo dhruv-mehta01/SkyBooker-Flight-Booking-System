@@ -1,55 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>SkyBooker - Flight Booking System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBooker | Premium Flights</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
+
 <body>
 
-<!-- Navbar -->
-<div class="nav-links">
-
-    <a href="index.html">Home</a>
-
-    <a href="bookings.html">My Bookings</a>
-
-    <span id="userDisplay"></span>
-
-    <a href="#" onclick="logout()" id="logoutBtn" style="display:none;">
-        Logout
-    </a>
-
-    <a href="login.html" id="loginBtn">
-        Login
-    </a>
-
-</div>
-<!-- Hero Section -->
-<div class="hero">
-    <div class="search-box">
-        <h2>Search Flights</h2>
-
-        <input type="text" id="from" placeholder="From">
-        <input type="text" id="to" placeholder="To">
-        <input type="date" id="date">
-
-        <button id="searchBtn">Search Flights</button>
-    </div>
-</div>
-
-<!-- Flight Results Section -->
-<section class="results-section">
-
-    <div class="container">
-
-        <div id="flights"></div>
-
+    <!-- Page Loader -->
+    <div class="page-loader" id="loader">
+        <div class="spinner"></div>
     </div>
 
-</section>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
-<script src="js/main.js"></script>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <i class='bx bxs-plane-alt text-gradient'></i>
+            <span>Sky</span>Booker
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Discover</a>
+            <a href="bookings.html" id="myBookingsBtn" style="display:none;">My Trips</a>
+            <span id="userDisplay" class="text-gradient font-bold"></span>
+            <button onclick="logout()" id="logoutBtn" class="btn btn-outline" style="display:none;">
+                <i class='bx bx-log-out'></i> Logout
+            </button>
+            <a href="login.html" id="loginBtn" class="btn btn-primary">
+                Sign In <i class='bx bx-right-arrow-alt'></i>
+            </a>
+        </div>
+    </nav>
 
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero glass fade-in-up">
+            <div class="hero-content text-center">
+                <span class="hero-subtitle text-gradient">Elevate Your Journey</span>
+                <h1 class="hero-title">Experience <br>Aviation Excellence</h1>
+                <p class="hero-desc text-muted">Book luxury flights to over 150 destinations worldwide with unparalleled
+                    comfort and style.</p>
+            </div>
+
+            <!-- Search Widget -->
+            <div class="search-widget glass fade-in-up delay-1">
+                <div class="search-tabs">
+                    <button class="search-tab active">One Way</button>
+                    <button class="search-tab">Round Trip</button>
+                    <button class="search-tab">Multi-City</button>
+                </div>
+
+                <div class="search-form">
+                    <div class="search-input-group">
+                        <i class='bx bx-map-pin'></i>
+                        <div class="input-content">
+                            <label>From</label>
+                            <input type="text" id="from" placeholder="Origin City or Airport" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="swap-btn">
+                        <i class='bx bx-transfer-alt'></i>
+                    </div>
+
+                    <div class="search-input-group">
+                        <i class='bx bxs-map-pin text-gradient'></i>
+                        <div class="input-content">
+                            <label>To</label>
+                            <input type="text" id="to" placeholder="Destination City" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="search-input-group">
+                        <i class='bx bx-calendar'></i>
+                        <div class="input-content">
+                            <label>Date</label>
+                            <input type="date" id="date">
+                        </div>
+                    </div>
+
+                    <div class="search-input-group">
+                        <i class='bx bx-user'></i>
+                        <div class="input-content">
+                            <label>Passengers</label>
+                            <select id="passengers" class="custom-select">
+                                <option>1 Adult, Economy</option>
+                                <option>2 Adults, Economy</option>
+                                <option>1 Adult, Business</option>
+                                <option>1 Adult, First Class</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="searchBtn" class="btn btn-primary search-submit">
+                        <i class='bx bx-search'></i> Search Flights
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flight Results -->
+        <section class="results-section container fade-in-up delay-2" style="display: none;" id="resultsSection">
+            <div class="results-header">
+                <h2>Available <span class="text-gradient">Flights</span></h2>
+                <div class="results-filters">
+                    <button class="btn btn-outline active">Best</button>
+                    <button class="btn btn-outline">Cheapest</button>
+                    <button class="btn btn-outline">Fastest</button>
+                </div>
+            </div>
+
+            <div id="flights" class="flights-grid">
+                <!-- Data injected by JS -->
+            </div>
+        </section>
+
+        <!-- Placeholder for landing if no search -->
+        <section class="destinations-preview container fade-in-up delay-3" id="destinationsPreview">
+            <h2>Popular <span class="text-gradient">Destinations</span></h2>
+            <div class="dest-grid">
+                <div class="dest-card glass">
+                    <div class="dest-img"
+                        style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=500&q=80');">
+                    </div>
+                    <div class="dest-info">
+                        <h3>Dubai</h3>
+                        <p class="text-muted">Flights from ₹15,000</p>
+                    </div>
+                </div>
+                <div class="dest-card glass">
+                    <div class="dest-img"
+                        style="background-image: url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=500&q=80');">
+                    </div>
+                    <div class="dest-info">
+                        <h3>Paris</h3>
+                        <p class="text-muted">Flights from ₹45,000</p>
+                    </div>
+                </div>
+                <div class="dest-card glass">
+                    <div class="dest-img"
+                        style="background-image: url('https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=500&q=80');">
+                    </div>
+                    <div class="dest-info">
+                        <h3>Singapore</h3>
+                        <p class="text-muted">Flights from ₹22,000</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- UI Logic -->
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
 </body>
+
 </html>

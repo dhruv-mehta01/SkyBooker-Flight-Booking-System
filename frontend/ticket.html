@@ -1,41 +1,380 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Your Ticket</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBooker | Boarding Pass</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial;
-            background-color: #f4f4f4;
+            background-color: #07090f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .ticket-wrapper {
+            background: #fff;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 20px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 240, 255, 0.1);
+            color: #1e293b;
+        }
+
+        .ticket-main {
+            flex: 2;
+            padding: 40px;
+            border-right: 2px dashed #cbd5e1;
+            position: relative;
+        }
+
+        .ticket-main::before,
+        .ticket-main::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: #07090f;
+            border-radius: 50%;
+        }
+
+        .ticket-main::before {
+            top: -15px;
+        }
+
+        .ticket-main::after {
+            bottom: -15px;
+        }
+
+        .ticket-stub {
+            flex: 1;
+            padding: 40px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
             text-align: center;
         }
 
-        .ticket {
-            background: white;
-            padding: 20px;
-            margin: 50px auto;
-            width: 400px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px gray;
+        /* Header */
+        .t-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .t-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .t-boarding {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Route */
+        .t-route {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .t-city h1 {
+            font-size: 3rem;
+            margin-bottom: 5px;
+            color: #020617;
+        }
+
+        .t-city p {
+            font-size: 1rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .t-plane {
+            flex: 1;
+            text-align: center;
+            font-size: 2rem;
+            color: var(--accent-secondary);
+            position: relative;
+        }
+
+        .t-plane::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+            z-index: -1;
+        }
+
+        /* Details Grid */
+        .t-details {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .t-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .t-item label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .t-item strong {
+            font-size: 1.2rem;
+            color: #0f172a;
+            white-space: nowrap;
+        }
+
+        /* Stub details */
+        .barcode {
+            width: 100%;
+            height: 80px;
+            background: repeating-linear-gradient(90deg,
+                    #000,
+                    #000 2px,
+                    transparent 2px,
+                    transparent 4px,
+                    #000 4px,
+                    #000 8px,
+                    transparent 8px,
+                    transparent 10px,
+                    #000 10px,
+                    #000 12px);
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+
+        .stub-route h2 {
+            font-size: 2rem;
+            color: #020617;
+        }
+
+        .stub-route {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            border-radius: var(--radius-full);
+            background: #fff;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-5px);
+        }
+
+        @media screen and (max-width: 800px) {
+            .ticket-wrapper {
+                flex-direction: column;
+            }
+
+            .ticket-main {
+                border-right: none;
+                border-bottom: 2px dashed #cbd5e1;
+            }
+
+            .ticket-main::before,
+            .ticket-main::after {
+                left: -15px;
+                right: auto;
+                top: auto;
+            }
+
+            .ticket-main::before {
+                bottom: -15px;
+            }
+
+            .ticket-main::after {
+                bottom: -15px;
+                left: auto;
+                right: -15px;
+            }
+
+            .t-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
-<body>
 
-<h1>Flight Ticket</h1>
+<body class="fade-in-up">
 
-<div class="ticket" id="ticket"></div>
+    <a href="#" onclick="window.print()" class="print-btn" id="printBtn">
+        <i class='bx bx-printer'></i> Print Boarding Pass
+    </a>
+    <a href="index.html" class="print-btn" style="bottom: 90px; background: var(--accent-gradient); color: #fff;">
+        <i class='bx bx-home'></i> Back to Home
+    </a>
 
-<script>
-    const booking = JSON.parse(localStorage.getItem("booking"));
+    <div class="ticket-wrapper">
+        <div class="ticket-main">
+            <div class="t-header">
+                <div class="t-logo">
+                    <i class='bx bxs-plane-alt'></i> SkyBooker
+                </div>
+                <div class="t-boarding">Boarding Pass</div>
+            </div>
 
-    document.getElementById("ticket").innerHTML = `
-        <h3>Booking ID: ${booking.bookingId}</h3>
-        <p>Name: ${booking.name}</p>
-        <p>From: ${booking.flight.from}</p>
-        <p>To: ${booking.flight.to}</p>
-        <p>Price: ₹${booking.flight.price}</p>
-    `;
-</script>
+            <div class="t-route">
+                <div class="t-city text-right">
+                    <h1 id="fromCode">ORG</h1>
+                    <p id="fromCity">Origin</p>
+                </div>
+                <div class="t-plane">
+                    <i class='bx bxs-plane-take-off'></i>
+                </div>
+                <div class="t-city text-left">
+                    <h1 id="toCode">DES</h1>
+                    <p id="toCity">Destination</p>
+                </div>
+            </div>
 
+            <div class="t-details" style="margin-bottom: 30px;">
+                <div class="t-item">
+                    <label>Passenger Name</label>
+                    <strong id="passengerName" style="color: var(--accent-secondary);">Passenger Name</strong>
+                </div>
+                <div class="t-item">
+                    <label>Flight No</label>
+                    <strong id="flightNo">SB000</strong>
+                </div>
+                <div class="t-item">
+                    <label>Date</label>
+                    <strong id="flightDate">00/00/0000</strong>
+                </div>
+            </div>
+
+            <div class="t-details">
+                <div class="t-item">
+                    <label>Boarding Time</label>
+                    <strong id="boardingTime">00:00</strong>
+                </div>
+                <div class="t-item">
+                    <label>Gate</label>
+                    <strong>G14</strong>
+                </div>
+                <div class="t-item">
+                    <label>Seat</label>
+                    <strong id="seatNo">--</strong>
+                </div>
+                <div class="t-item">
+                    <label>Class</label>
+                    <strong>Economy</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="ticket-stub">
+            <div class="stub-route">
+                <h2 id="stubRoute">ORG - DES</h2>
+                <div style="font-size: 0.8rem; color: #64748b; margin-top:5px;" id="stubPass">Passenger</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <div class="t-item" style="text-align: left;">
+                    <label>Seat</label>
+                    <strong id="stubSeat" style="font-size: 1.5rem; color: var(--accent-secondary);">--</strong>
+                </div>
+                <div class="t-item" style="text-align: right;">
+                    <label>Gate</label>
+                    <strong style="font-size: 1.5rem;">G14</strong>
+                </div>
+            </div>
+
+            <div class="barcode"></div>
+            <div style="font-family: monospace; font-size: 0.8rem; color: #64748b;" id="bookingRef">REF: 000000</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const bookingStr = localStorage.getItem("finalBooking");
+            const passStr = localStorage.getItem("passengerDetails");
+            const seatStr = localStorage.getItem("selectedSeat");
+
+            if (!bookingStr) {
+                // Not booked properly
+                window.location.href = "index.html";
+                return;
+            }
+
+            const booking = JSON.parse(bookingStr);
+            const flight = booking.flight;
+            const passenger = passStr ? JSON.parse(passStr) : { firstName: booking.name, lastName: "" };
+            const pName = `${passenger.firstName} ${passenger.lastName}`;
+
+            // Generate airport codes
+            const fromCode = flight.from.substring(0, 3).toUpperCase();
+            const toCode = flight.to.substring(0, 3).toUpperCase();
+
+            // Calculate boarding time (45 mins before departure)
+            // Just simulate it by taking the departure string and subtracting logic or just use string
+            const bTime = (flight.departure || "00:00").replace(" AM", "").replace(" PM", "");
+
+            document.getElementById("fromCode").innerText = fromCode;
+            document.getElementById("fromCity").innerText = flight.from;
+            document.getElementById("toCode").innerText = toCode;
+            document.getElementById("toCity").innerText = flight.to;
+
+            document.getElementById("stubRoute").innerText = `${fromCode} - ${toCode}`;
+
+            document.getElementById("passengerName").innerText = pName;
+            document.getElementById("stubPass").innerText = pName.toUpperCase();
+
+            document.getElementById("flightNo").innerText = `SB${1000 + parseInt(flight.id)}`;
+            document.getElementById("flightDate").innerText = flight.date;
+            document.getElementById("boardingTime").innerText = bTime;
+
+            document.getElementById("seatNo").innerText = seatStr || "A1";
+            document.getElementById("stubSeat").innerText = seatStr || "A1";
+
+            document.getElementById("bookingRef").innerText = `REF: ${booking.bookingId.toString().padStart(6, '0')}`;
+        });
+    </script>
 </body>
+
 </html>

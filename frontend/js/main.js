@@ -1,159 +1,162 @@
-// Wait until page loads
+const API_BASE = "http://localhost:3000";
+
 document.addEventListener("DOMContentLoaded", function () {
-
-    console.log("main.js loaded");
-
     const searchBtn = document.getElementById("searchBtn");
 
+    // Swap button logic
+    const swapBtn = document.querySelector(".swap-btn");
+    if (swapBtn) {
+        swapBtn.addEventListener("click", () => {
+            const fromInput = document.getElementById("from");
+            const toInput = document.getElementById("to");
+            const temp = fromInput.value;
+            fromInput.value = toInput.value;
+            toInput.value = temp;
+        });
+    }
+
     if (searchBtn) {
-
         searchBtn.addEventListener("click", function () {
-
-            console.log("Search button clicked");
 
             const fromInput = document.getElementById("from").value.toLowerCase();
             const toInput = document.getElementById("to").value.toLowerCase();
             const dateInput = document.getElementById("date").value;
 
-            fetch("http://localhost:3000/flights")
+            // Basic validation
+            if (!fromInput || !toInput || !dateInput) {
+                showToast("Please fill all origin, destination and date details", "error");
+                return;
+            }
 
+            const originalText = searchBtn.innerHTML;
+            searchBtn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Searching...`;
+            searchBtn.disabled = true;
+
+            fetch(`${API_BASE}/flights`)
                 .then(response => response.json())
-
                 .then(data => {
-
-                    console.log("Flights received:", data);
+                    searchBtn.innerHTML = originalText;
+                    searchBtn.disabled = false;
 
                     const flightsDiv = document.getElementById("flights");
+                    const resultsSection = document.getElementById("resultsSection");
+                    const destinationsPreview = document.getElementById("destinationsPreview");
 
                     flightsDiv.innerHTML = "";
 
-                    const filteredFlights = data.filter(flight => {
+                    // Hide destinations, show results
+                    if (destinationsPreview) destinationsPreview.style.display = "none";
+                    resultsSection.style.display = "block";
 
+                    const filteredFlights = data.filter(flight => {
+                        // Removing the strict date requirement so all future dates show results
+                        // Just match origin and destination
                         return (
                             (fromInput === "" || flight.from.toLowerCase().includes(fromInput)) &&
-                            (toInput === "" || flight.to.toLowerCase().includes(toInput)) &&
-                            (dateInput === "" || flight.date === dateInput)
+                            (toInput === "" || flight.to.toLowerCase().includes(toInput))
                         );
-
                     });
 
-                    if (filteredFlights.length === 0) {
-
-                        flightsDiv.innerHTML = "<h3>No flights found</h3>";
-                        return;
-
+                    // Update UI date to match what the user searched, for visual consistency
+                    if (filteredFlights.length > 0 && dateInput) {
+                        filteredFlights.forEach(f => f.date = dateInput);
+                        localStorage.setItem("searchDate", dateInput);
                     }
 
-                    flightsDiv.innerHTML = "<h2>Available Flights</h2>";
+                    if (filteredFlights.length === 0) {
+                        flightsDiv.innerHTML = `
+                            <div class="glass" style="padding: 40px; text-align: center; border-radius: var(--radius-lg);">
+                                <i class='bx bx-search-alt text-gradient' style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                <h3>No flights found</h3>
+                                <p class="text-muted">Try adjusting your dates or destinations.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    showToast(`Found ${filteredFlights.length} flights!`, "success");
 
                     filteredFlights.forEach(flight => {
-
                         flightsDiv.innerHTML += `
-                        
                         <div class="flight-card">
+                            <div class="flight-airline">
+                                <div class="airline-logo">
+                                    <i class='bx bxs-plane-alt'></i>
+                                </div>
+                                <div class="airline-info">
+                                    <h3>${flight.airline}</h3>
+                                    <p>Flight ${flight.id} • ${flight.duration}</p>
+                                </div>
+                            </div>
 
-                            <div class="flight-top">
-
-                                <div class="airline">
-                                    <img src="https://img.icons8.com/color/48/airplane-take-off.png"/>
-                                    <div>
-                                        <h3>${flight.airline}</h3>
-                                        <p>${flight.duration}</p>
+                            <div class="flight-route">
+                                <div class="route-point text-right">
+                                    <h2 class="route-time">${flight.departure}</h2>
+                                    <span class="route-city">${flight.from}</span>
+                                </div>
+                                
+                                <div class="route-line">
+                                    <span class="duration">${flight.duration}</span>
+                                    <div class="line-visual">
+                                        <i class='bx bxs-plane-take-off'></i>
                                     </div>
+                                    <span class="text-muted" style="font-size: 0.75rem;">Non-stop</span>
                                 </div>
-
-                                <div class="price">
-                                    ₹${flight.price}
+                                
+                                <div class="route-point text-left">
+                                    <h2 class="route-time">${flight.arrival}</h2>
+                                    <span class="route-city">${flight.to}</span>
                                 </div>
-
                             </div>
 
-                            <div class="flight-middle">
-
-                                <div class="city">
-                                    <h2>${flight.from}</h2>
-                                    <p>${flight.departure}</p>
-                                    <p>${flight.date}</p>
-                                </div>
-
-                                <div class="timeline">
-                                    ✈────────✈
-                                </div>
-
-                                <div class="city">
-                                    <h2>${flight.to}</h2>
-                                    <p>${flight.arrival}</p>
-                                    <p>Arrival</p>
-                                </div>
-
-                            </div>
-
-                            <div class="flight-bottom">
-
-                                <button onclick="bookFlight(${flight.id})">
-                                    Book Ticket
+                            <div class="flight-action">
+                                <div class="flight-price">₹${flight.price}</div>
+                                <button onclick="bookFlight(${flight.id})" class="btn btn-primary">
+                                    Select <i class='bx bx-right-arrow-alt'></i>
                                 </button>
-
                             </div>
-
                         </div>
-                        
                         `;
-
                     });
 
+                    // Scroll to results smoothly
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
                 })
-
                 .catch(error => {
-
+                    searchBtn.innerHTML = originalText;
+                    searchBtn.disabled = false;
+                    showToast("Failed to connect to server", "error");
                     console.log("ERROR:", error);
-
                 });
-
         });
-
     }
-
 });
 
-
-// Book Flight → Redirect to Payment Page
+// Select Flight → Navigate to seat selection or passenger info
 function bookFlight(id) {
-
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
-
-        alert("Please login first");
-        window.location.href = "login.html";
+        showToast("Please login first to continue booking", "info");
+        setTimeout(() => window.location.href = "login.html", 1500);
         return;
-
     }
 
-    fetch("http://localhost:3000/flights")
-
+    fetch(`${API_BASE}/flights`)
         .then(res => res.json())
-
         .then(data => {
-
             const selectedFlight = data.find(f => f.id === id);
+
+            // Override the flight dummy date with the user's searched date
+            const searchDate = localStorage.getItem("searchDate");
+            if (searchDate) {
+                selectedFlight.date = searchDate;
+            }
 
             localStorage.setItem("selectedFlight", JSON.stringify(selectedFlight));
 
-            window.location.href = "payment.html";
-
+            // Go to passenger info/seat selection page
+            // For now, redirect to passenger.html which we will build
+            window.location.href = "passenger.html";
         });
-
-}
-
-
-// Logout function
-function logout() {
-
-    localStorage.removeItem("user");
-
-    alert("Logged out successfully");
-
-    window.location.href = "index.html";
-
 }
